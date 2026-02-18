@@ -191,30 +191,31 @@
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC SELECT
-# MAGIC     'Top product'         AS metric,
-# MAGIC     product               AS value
-# MAGIC FROM gold_top_products
-# MAGIC ORDER BY total_revenue DESC
-# MAGIC LIMIT 1
-# MAGIC
+# MAGIC -- Each branch is wrapped in a subquery so ORDER BY + LIMIT work correctly
+# MAGIC -- before the UNION ALL combines the results
+# MAGIC WITH top_product AS (
+# MAGIC     SELECT 'Top product' AS metric, product AS value
+# MAGIC     FROM   gold_top_products
+# MAGIC     ORDER BY total_revenue DESC
+# MAGIC     LIMIT 1
+# MAGIC ),
+# MAGIC top_region AS (
+# MAGIC     SELECT 'Top region' AS metric, region AS value
+# MAGIC     FROM   gold_sales_by_region
+# MAGIC     ORDER BY total_revenue DESC
+# MAGIC     LIMIT 1
+# MAGIC ),
+# MAGIC best_month AS (
+# MAGIC     SELECT 'Best month' AS metric, year_month AS value
+# MAGIC     FROM   gold_monthly_revenue
+# MAGIC     ORDER BY monthly_revenue DESC
+# MAGIC     LIMIT 1
+# MAGIC )
+# MAGIC SELECT * FROM top_product
 # MAGIC UNION ALL
-# MAGIC
-# MAGIC SELECT
-# MAGIC     'Top region'          AS metric,
-# MAGIC     region                AS value
-# MAGIC FROM gold_sales_by_region
-# MAGIC ORDER BY total_revenue DESC
-# MAGIC LIMIT 1
-# MAGIC
+# MAGIC SELECT * FROM top_region
 # MAGIC UNION ALL
-# MAGIC
-# MAGIC SELECT
-# MAGIC     'Best month'          AS metric,
-# MAGIC     year_month            AS value
-# MAGIC FROM gold_monthly_revenue
-# MAGIC ORDER BY monthly_revenue DESC
-# MAGIC LIMIT 1;
+# MAGIC SELECT * FROM best_month;
 
 # COMMAND ----------
 
